@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>食材数早見表</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', sans-serif; background: #ffffff; color: #2c2c2a; font-size: 14px; line-height: 1.6; }
+
+  header { background: #f7f5f0; border-bottom: 1px solid #e0ddd6; padding: 0.75rem 1.5rem; }
+  header h1 { font-size: 16px; font-weight: 600; }
+
+  .container { max-width: 680px; margin: 0 auto; padding: 1rem 0.75rem; }
+
+  .panel { background: #f7f5f0; border: 1px solid #e0ddd6; border-radius: 12px; padding: 1rem 1.25rem; margin-bottom: 0.75rem; }
+  .panel-title { font-size: 10px; font-weight: 700; color: #888780; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 0.75rem; }
+
+  .type-toggle { display: flex; gap: 8px; }
+  .type-btn {
+    flex: 1; padding: 8px; border-radius: 8px; border: 1.5px solid #d3d1c7;
+    background: #fff; font-size: 12px; font-weight: 600; color: #888780;
+    cursor: pointer; text-align: center; transition: all 0.15s;
+  }
+  .type-btn.active { border-color: #639922; background: #e6f4d4; color: #3b6d11; }
+
+  .food-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+  @media (min-width: 400px) { .food-grid { grid-template-columns: repeat(5, 1fr); } }
+
+  .food-btn {
+    display: flex; flex-direction: column; align-items: center; gap: 2px;
+    padding: 6px 4px; border-radius: 8px; border: 1px solid #e0ddd6;
+    background: #fff; cursor: pointer; transition: all 0.15s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .food-btn:hover { border-color: #aaa; }
+  .food-btn.active { border-color: #639922; background: #e6f4d4; }
+  .food-btn .fe { font-size: 18px; line-height: 1; }
+  .food-btn .fn { font-size: 9px; color: #888780; text-align: center; line-height: 1.2; }
+  .food-btn.active .fn { color: #3b6d11; }
+
+  /* 結果パネル */
+  .result-panel { background: #f7f5f0; border: 1px solid #e0ddd6; border-radius: 12px; margin-bottom: 0.75rem; overflow: hidden; }
+  .result-header { padding: 0.75rem 1.25rem 0; }
+  .result-title { font-size: 10px; font-weight: 700; color: #888780; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 0.5rem; }
+  .result-selected { display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; color: #2c2c2a; margin-bottom: 0.75rem; }
+  .result-count { font-size: 22px; font-weight: 700; color: #3b6d11; }
+  .result-count-label { font-size: 12px; color: #888780; }
+
+  .rank-table { width: 100%; border-collapse: collapse; }
+  .rank-table th { padding: 6px 10px; font-size: 10px; font-weight: 700; color: #888780; text-align: left; border-bottom: 1.5px solid #e0ddd6; white-space: nowrap; }
+  .rank-table th.num { text-align: right; }
+  .rank-table td { padding: 7px 10px; font-size: 12px; border-bottom: 1px solid #e8e5de; vertical-align: middle; }
+  .rank-table td.num { text-align: right; font-weight: 600; }
+  .rank-table tr:last-child td { border-bottom: none; }
+  .rank-table tr:hover td { background: #fff; }
+
+  .rank-num { font-size: 10px; color: #888780; font-weight: 600; width: 20px; }
+  .food-cell { display: flex; align-items: center; gap: 5px; }
+  .food-emoji { font-size: 16px; }
+  .food-name { font-size: 12px; }
+
+  .dot-bar { display: flex; align-items: center; gap: 3px; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: #e0ddd6; flex-shrink: 0; }
+
+  /* お得度バッジ */
+  .badge-great  { background: #d4f0c0; color: #2d7a00; font-size: 10px; padding: 1px 7px; border-radius: 99px; font-weight: 700; white-space: nowrap; }
+  .badge-good   { background: #e8f5d4; color: #4a8a1a; font-size: 10px; padding: 1px 7px; border-radius: 99px; font-weight: 700; white-space: nowrap; }
+  .badge-neutral{ background: #f0ede6; color: #888780; font-size: 10px; padding: 1px 7px; border-radius: 99px; font-weight: 700; white-space: nowrap; }
+  .badge-bad    { background: #fde8d8; color: #b84a1a; font-size: 10px; padding: 1px 7px; border-radius: 99px; font-weight: 700; white-space: nowrap; }
+  .badge-worst  { background: #fcd6c0; color: #a03010; font-size: 10px; padding: 1px 7px; border-radius: 99px; font-weight: 700; white-space: nowrap; }
+
+  .same-food-note { font-size: 11px; color: #639922; font-weight: 600; padding: 0.5rem 1.25rem; background: #edf7e0; border-top: 1px solid #d4edba; }
+
+  .placeholder { text-align: center; color: #bbb; font-size: 13px; padding: 1.5rem; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>食材数早見表</h1>
+</header>
+
+<div class="container">
+
+  <!-- 得意タイプ選択 -->
+  <div class="panel">
+    <div class="panel-title">得意タイプ</div>
+    <div class="type-toggle">
+      <button class="type-btn active" id="btn-food" onclick="setType('food')">🍳 食材得意</button>
+      <button class="type-btn" id="btn-other" onclick="setType('other')">🌿 スキル・きのみ得意</button>
+    </div>
+  </div>
+
+  <!-- 第一食材選択 -->
+  <div class="panel">
+    <div class="panel-title">第一食材</div>
+    <div class="food-grid" id="grid-first"></div>
+  </div>
+
+  <!-- 第二食材結果 -->
+  <div class="result-panel" id="panel-second">
+    <div class="result-header">
+      <div class="result-title">第二食材　— お得度ランキング</div>
+    </div>
+    <div id="result-second"><div class="placeholder">第一食材を選んでください</div></div>
+  </div>
+
+  <!-- 第三食材結果 -->
+  <div class="result-panel" id="panel-third">
+    <div class="result-header">
+      <div class="result-title">第三食材　— お得度ランキング</div>
+    </div>
+    <div id="result-third"><div class="placeholder">第一食材を選んでください</div></div>
+  </div>
+
+</div>
+
+<script>
+const foods = [
+  { name:'リンゴ',  short:'リンゴ',   e:'🍎', energy:90  },
+  { name:'ミルク',  short:'ミルク',   e:'🥛', energy:98  },
+  { name:'ミツ',    short:'ミツ',     e:'🍯', energy:101 },
+  { name:'ミート',  short:'ミート',   e:'🍖', energy:103 },
+  { name:'大豆',    short:'大豆',     e:'🫘', energy:100 },
+  { name:'ジンジャー', short:'ジンジャー', e:'🫚', energy:109 },
+  { name:'トマト',  short:'トマト',   e:'🍅', energy:110 },
+  { name:'エッグ',  short:'エッグ',   e:'🥚', energy:115 },
+  { name:'オイル',  short:'オイル',   e:'🍾', energy:121 },
+  { name:'ポテト',  short:'ポテト',   e:'🥔', energy:124 },
+  { name:'ハーブ',  short:'ハーブ',   e:'🌿', energy:130 },
+  { name:'コーン',  short:'コーン',   e:'🌽', energy:140 },
+  { name:'カカオ',  short:'カカオ',   e:'🍫', energy:151 },
+  { name:'コーヒー', short:'コーヒー', e:'☕', energy:153 },
+  { name:'キノコ',  short:'キノコ',   e:'🍄‍🟫', energy:167 },
+  { name:'ねぎ',    short:'ねぎ',     e:'🎍', energy:185 },
+  { name:'アボカド', short:'アボカド', e:'🥑', energy:162 },
+  { name:'カボチャ', short:'カボチャ', e:'🎃', energy:250 },
+  { name:'シッポ',  short:'シッポ',   e:'🦎', energy:342 },
+];
+
+// 得意タイプ: food=食材得意, other=スキル・きのみ
+let currentType = 'food';
+let selectedFirst = null;
+
+// 第一食材の個数
+function getFirstCount() { return currentType === 'food' ? 2 : 1; }
+
+// 同じ食材の固定個数
+const sameFoodCount = {
+  food:  { first:2, second:5, third:7 },
+  other: { first:1, second:2, third:4 },
+};
+// ※「食材得意の第一食材は2個持ってくる」は計算用、同食材特別ルールの第一は1個（表示用）
+
+// 計算：小数値（四捨五入前）を返す
+function calcRaw(firstEnergy, firstCount, multiplier, targetEnergy) {
+  return (firstEnergy * firstCount * multiplier) / targetEnergy;
+}
+
+// お得度スコア（ランキング用）
+// 小数部分frac: 0.5→最高, 0.6→次, ..., 0.9, 0.0, 0.1, ..., 0.4→最低
+function getScore(frac) {
+  frac = Math.round(frac * 10) / 10; // 浮動小数点対策
+  if(frac === 0.5) return 10;
+  if(frac === 0.6) return 9;
+  if(frac === 0.7) return 8;
+  if(frac === 0.8) return 7;
+  if(frac === 0.9) return 6;
+  if(frac === 0.0) return 5;
+  if(frac === 0.1) return 4;
+  if(frac === 0.2) return 3;
+  if(frac === 0.3) return 2;
+  if(frac === 0.4) return 1;
+  return 5;
+}
+
+function getBadge(frac) {
+  frac = Math.round(frac * 10) / 10;
+  if(frac === 0.5) return '<span class="badge-great">✨ 最もお得</span>';
+  if(frac === 0.6 || frac === 0.7) return '<span class="badge-good">👍 お得</span>';
+  if(frac === 0.8 || frac === 0.9) return '<span class="badge-good">🔼 少しお得</span>';
+  if(frac === 0.0) return '<span class="badge-neutral">➖ ±0</span>';
+  if(frac === 0.1 || frac === 0.2) return '<span class="badge-bad">🔽 少し損</span>';
+  if(frac === 0.3) return '<span class="badge-bad">👎 損</span>';
+  if(frac === 0.4) return '<span class="badge-worst">😢 最も損</span>';
+  return '';
+}
+
+function setType(t) {
+  currentType = t;
+  document.getElementById('btn-food').classList.toggle('active', t === 'food');
+  document.getElementById('btn-other').classList.toggle('active', t === 'other');
+  if(selectedFirst !== null) calcResults();
+}
+
+function selectFirst(idx) {
+  selectedFirst = idx;
+  document.querySelectorAll('.food-btn').forEach((b,i) => b.classList.toggle('active', i === idx));
+  calcResults();
+}
+
+function calcResults() {
+  const f1 = foods[selectedFirst];
+  const fc = getFirstCount();
+  const sf = sameFoodCount[currentType];
+
+  // 第二食材
+  const secondResults = foods.map((f2, i) => {
+    if(i === selectedFirst) {
+      return { food: f2, count: sf.second, raw: null, frac: null, isSame: true };
+    }
+    const raw = calcRaw(f1.energy, fc, 2.25, f2.energy);
+    const frac = Math.round((raw % 1) * 10) / 10;
+    const count = Math.round(raw);
+    return { food: f2, count, raw, frac, isSame: false, score: getScore(frac) };
+  });
+
+  // 第三食材
+  const thirdResults = foods.map((f3, i) => {
+    if(i === selectedFirst) {
+      return { food: f3, count: sf.third, raw: null, frac: null, isSame: true };
+    }
+    const raw = calcRaw(f1.energy, fc, 3.60, f3.energy);
+    const frac = Math.round((raw % 1) * 10) / 10;
+    const count = Math.round(raw);
+    return { food: f3, count, raw, frac, isSame: false, score: getScore(frac) };
+  });
+
+  renderResult('second', f1, secondResults, sf.second);
+  renderResult('third', f1, thirdResults, sf.third);
+}
+
+function renderResult(which, f1, results, sameCount) {
+  const label = which === 'second' ? '第二' : '第三';
+  const sameItem = results.find(r => r.isSame);
+  const others = results.filter(r => !r.isSame).sort((a,b) => b.score - a.score);
+  const sorted = [...others]; // 同食材は別途表示
+
+  let html = '<table class="rank-table"><thead><tr>';
+  html += '<th style="width:24px"></th>';
+  html += '<th>食材</th>';
+  html += '<th class="num">個数</th>';
+  html += '<th class="num">小数</th>';
+  html += '<th>お得度</th>';
+  html += '</tr></thead><tbody>';
+
+  sorted.forEach((r, idx) => {
+    const fracStr = r.raw !== null ? (r.raw % 1).toFixed(1).replace('0.','.'): '-';
+    html += `<tr>
+      <td><span class="rank-num">${idx+1}</span></td>
+      <td><div class="food-cell"><span class="food-emoji">${r.food.e}</span><span class="food-name">${r.food.name}</span></div></td>
+      <td class="num">${r.count}個</td>
+      <td class="num" style="color:#888780;font-size:11px;">${fracStr}</td>
+      <td>${getBadge(r.frac)}</td>
+    </tr>`;
+  });
+
+  html += '</tbody></table>';
+
+  // 同食材は別枠
+  if(sameItem) {
+    html += `<div class="same-food-note">※ ${f1.e} ${f1.name}（同じ食材）→ ${sameCount}個（固定）</div>`;
+  }
+
+  document.getElementById(`result-${which}`).innerHTML = html;
+}
+
+// グリッド初期化
+function initGrid() {
+  const grid = document.getElementById('grid-first');
+  grid.innerHTML = foods.map((f, i) =>
+    `<button class="food-btn" onclick="selectFirst(${i})">
+      <span class="fe">${f.e}</span>
+      <span class="fn">${f.name}</span>
+    </button>`
+  ).join('');
+}
+
+initGrid();
+</script>
+</body>
+</html>

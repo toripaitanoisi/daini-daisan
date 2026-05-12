@@ -73,12 +73,76 @@
   .same-food-note { font-size: 11px; color: #639922; font-weight: 600; padding: 0.5rem 1.25rem; background: #edf7e0; border-top: 1px solid #d4edba; }
 
   .placeholder { text-align: center; color: #bbb; font-size: 13px; padding: 1.5rem; }
+  /* ヘッダーリンク・ヘルプボタン */
+  .header-inner { display: flex; align-items: center; justify-content: space-between; }
+  .header-right { display: flex; align-items: center; gap: 8px; }
+  .help-btn {
+    width: 28px; height: 28px; border-radius: 50%;
+    border: 1.5px solid #d3d1c7; background: #fff;
+    color: #888780; font-size: 13px; font-weight: 700;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    transition: all 0.15s; flex-shrink: 0;
+  }
+  .help-btn:hover { border-color: #639922; color: #639922; }
+  .link-btn {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-size: 11px; color: #888780;
+    text-decoration: none; transition: color 0.15s; white-space: nowrap;
+    border-bottom: 1px solid #d3d1c7; padding-bottom: 1px;
+  }
+  .link-btn:hover { color: #3b6d11; border-bottom-color: #3b6d11; }
+
+  /* モーダル */
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.4);
+    display: none; align-items: center; justify-content: center;
+    z-index: 1000; padding: 1rem;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: #fff; border-radius: 16px; padding: 1.5rem;
+    max-width: 420px; width: 100%; max-height: 80vh; overflow-y: auto;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+  }
+  .modal-title { font-size: 15px; font-weight: 700; margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: center; }
+  .modal-close { background: none; border: none; font-size: 20px; cursor: pointer; color: #888780; padding: 0 4px; line-height: 1; }
+  .modal-section { margin-bottom: 1rem; }
+  .modal-section h3 { font-size: 11px; font-weight: 700; color: #888780; letter-spacing: 0.08em; margin-bottom: 0.4rem; text-transform: uppercase; }
+  .modal-section p { font-size: 13px; color: #2c2c2a; line-height: 1.7; }
+  .modal-credit { font-size: 12px; color: #888780; border-top: 1px solid #f0ede6; padding-top: 0.75rem; margin-top: 0.75rem; }
 </style>
 </head>
 <body>
 
-<header>
-  <h1>食材数早見表</h1>
+<!-- ヘルプモーダル -->
+<div class="modal-overlay" id="help-modal" onclick="closeHelp(event)">
+  <div class="modal">
+    <div class="modal-title">
+      <span>使い方</span>
+      <button class="modal-close" onclick="document.getElementById('help-modal').classList.remove('open')">×</button>
+    </div>
+    <div class="modal-section">
+      <h3>食材数早見表</h3>
+      <p>とくいタイプと第一食材を選ぶと、第二食材と第三食材の個数一覧そしてお得度がわかります。</p>
+    </div>
+    <div class="modal-section">
+      <h3>お得度について</h3>
+      <p>小数点四捨五入のため、0.5を最もお得・0.4を最も損と定義しています。</p>
+    </div>
+    <div class="modal-credit">
+      お気づきの点は <strong>@toripaitanoisi</strong> までお知らせください。
+    </div>
+  </div>
+</div>
+
+<header style="padding: 0.75rem 1.5rem;">
+  <div class="header-inner">
+    <h1 style="font-size:16px;font-weight:600;">食材数早見表</h1>
+    <div class="header-right">
+      <a class="link-btn" href="https://toripaitanoisi.github.io/nabe-recipe/" target="_blank">🍳 鍋容量別レシピ一覧</a>
+      <button class="help-btn" onclick="document.getElementById('help-modal').classList.add('open')">?</button>
+    </div>
+  </div>
 </header>
 
 <div class="container">
@@ -278,6 +342,11 @@ function initGrid() {
 }
 
 initGrid();
-</script>
+
+function closeHelp(e) {
+  if(e.target === document.getElementById('help-modal')) {
+    document.getElementById('help-modal').classList.remove('open');
+  }
+}</script>
 </body>
 </html>

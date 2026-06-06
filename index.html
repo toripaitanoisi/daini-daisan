@@ -111,6 +111,21 @@
   .modal-section p { font-size: 13px; color: #2c2c2a; line-height: 1.7; }
   .modal-credit { font-size: 12px; color: #888780; border-top: 1px solid #f0ede6; padding-top: 0.75rem; margin-top: 0.75rem; }
 </style>
+<script>
+function switchTab(n) {
+  document.getElementById('tab-1').style.display = n === 1 ? 'block' : 'none';
+  document.getElementById('tab-2').style.display = n === 2 ? 'block' : 'none';
+  const t1 = document.getElementById('tab-btn-1');
+  const t2 = document.getElementById('tab-btn-2');
+  t1.style.color = n === 1 ? '#3b6d11' : '#888780';
+  t1.style.borderBottomColor = n === 1 ? '#3b6d11' : 'transparent';
+  t2.style.color = n === 2 ? '#3b6d11' : '#888780';
+  t2.style.borderBottomColor = n === 2 ? '#3b6d11' : 'transparent';
+  // タブ2に切り替えたときにグリッドを初期化
+  if(n === 2 && window._initGridTarget) window._initGridTarget();
+}
+
+</script>
 </head>
 <body>
 
@@ -145,6 +160,16 @@
   </div>
 </header>
 
+<!-- タブバー -->
+<div style="max-width:680px;margin:0 auto;padding:0.5rem 0.75rem 0;">
+  <div style="display:flex;border-bottom:2px solid #e0ddd6;">
+    <button id="tab-btn-1" onclick="switchTab(1)" style="flex:1;padding:9px 8px;font-size:12px;font-weight:600;color:#3b6d11;background:none;border:none;cursor:pointer;border-bottom:2px solid #3b6d11;margin-bottom:-2px;">第一食材から探す</button>
+    <button id="tab-btn-2" onclick="switchTab(2)" style="flex:1;padding:9px 8px;font-size:12px;font-weight:600;color:#888780;background:none;border:none;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;">第二・三食材から探す</button>
+  </div>
+</div>
+
+<!-- タブ1 -->
+<div id="tab-1" style="display:block;">
 <div class="container">
 
   <!-- 得意タイプ選択 -->
@@ -179,6 +204,47 @@
   </div>
 
 </div>
+
+</div><!-- /tab-1 container -->
+</div><!-- /tab-1 -->
+
+<!-- タブ2：第二・三食材から探す -->
+<div id="tab-2" style="display:none;">
+<div class="container">
+
+  <!-- 得意タイプ -->
+  <div class="panel">
+    <div class="panel-title">得意タイプ</div>
+    <div class="type-toggle">
+      <button class="type-btn active" id="btn-food-r" onclick="setTypeR('food')">🍳 食材得意</button>
+      <button class="type-btn" id="btn-other-r" onclick="setTypeR('other')">🌿 スキル・きのみ得意</button>
+    </div>
+  </div>
+
+  <!-- 第二食材選択 -->
+  <div class="panel">
+    <div class="panel-title">第二食材 / 第三食材</div>
+    <div class="food-grid" id="grid-target"></div>
+  </div>
+
+  <!-- 結果：第一食材ランキング -->
+  <div class="result-panel" id="panel-reverse-second">
+    <div class="result-header">
+      <div class="result-title">第二食材として使う場合　— 第一食材お得度ランキング</div>
+    </div>
+    <div id="result-reverse-second"><div class="placeholder">食材を選んでください</div></div>
+  </div>
+
+  <div class="result-panel" id="panel-reverse-third">
+    <div class="result-header">
+      <div class="result-title">第三食材として使う場合　— 第一食材お得度ランキング</div>
+    </div>
+    <div id="result-reverse-third"><div class="placeholder">食材を選んでください</div></div>
+  </div>
+
+</div>
+</div><!-- /tab-2 -->
+
 
 <script>
 const foods = [
@@ -244,7 +310,7 @@ function getBadge(frac) {
   if(frac === 0.5) return '<span class="badge-great">✨ 最もお得</span>';
   if(frac === 0.6 || frac === 0.7) return '<span class="badge-good">👍 お得</span>';
   if(frac === 0.8 || frac === 0.9) return '<span class="badge-good">🔼 少しお得</span>';
-  if(frac === 0.0) return '<span class="badge-neutral">➖ ±0</span>';
+  if(frac === 0.0) return '<span class="badge-neutral">〰️ 真ん中</span>';
   if(frac === 0.1 || frac === 0.2) return '<span class="badge-bad">🔽 少し損</span>';
   if(frac === 0.3) return '<span class="badge-bad">👎 損</span>';
   if(frac === 0.4) return '<span class="badge-worst">😢 最も損</span>';
@@ -275,7 +341,7 @@ function calcResults() {
       return { food: f2, count: sf.second, raw: null, frac: null, isSame: true };
     }
     const raw = calcRaw(f1.energy, fc, 2.25, f2.energy);
-    const frac = Math.round((raw % 1) * 10) / 10;
+    let frac = Math.round((raw % 1) * 10) / 10; if(frac >= 1.0) frac = 0.0;
     const count = Math.round(raw);
     return { food: f2, count, raw, frac, isSame: false, score: getScore(frac) };
   });
@@ -286,7 +352,7 @@ function calcResults() {
       return { food: f3, count: sf.third, raw: null, frac: null, isSame: true };
     }
     const raw = calcRaw(f1.energy, fc, 3.60, f3.energy);
-    const frac = Math.round((raw % 1) * 10) / 10;
+    let frac = Math.round((raw % 1) * 10) / 10; if(frac >= 1.0) frac = 0.0;
     const count = Math.round(raw);
     return { food: f3, count, raw, frac, isSame: false, score: getScore(frac) };
   });
@@ -347,6 +413,95 @@ function closeHelp(e) {
   if(e.target === document.getElementById('help-modal')) {
     document.getElementById('help-modal').classList.remove('open');
   }
-}</script>
+}
+
+// ── タブ2：逆引き ──
+let currentTypeR = 'food';
+let selectedTarget = null;
+
+function setTypeR(t) {
+  currentTypeR = t;
+  document.getElementById('btn-food-r').classList.toggle('active', t === 'food');
+  document.getElementById('btn-other-r').classList.toggle('active', t === 'other');
+  if(selectedTarget !== null) calcReverseResult();
+}
+
+function initGridTarget() {
+  const grid = document.getElementById('grid-target');
+  if(!grid) return;
+  grid.innerHTML = foods.map((f, i) =>
+    `<button class="food-btn" onclick="selectTarget(${i})">
+      <span class="fe">${f.e}</span>
+      <span class="fn">${f.name}</span>
+    </button>`
+  ).join('');
+}
+
+function selectTarget(idx) {
+  selectedTarget = idx;
+  document.querySelectorAll('#grid-target .food-btn').forEach((b,i) => b.classList.toggle('active', i === idx));
+  calcReverseResult();
+}
+
+function calcReverseResult() {
+  const target = foods[selectedTarget];
+  const sf = sameFoodCount[currentTypeR];
+  const fc = currentTypeR === 'food' ? 2 : 1;
+
+  const secondResults = foods.map((f1, i) => {
+    if(i === selectedTarget) return { food: f1, count: sf.second, raw: null, frac: null, isSame: true };
+    const raw = calcRaw(f1.energy, fc, 2.25, target.energy);
+    let frac = Math.round((raw % 1) * 10) / 10; if(frac >= 1.0) frac = 0.0;
+    return { food: f1, count: Math.round(raw), raw, frac, isSame: false, score: getScore(frac) };
+  });
+
+  const thirdResults = foods.map((f1, i) => {
+    if(i === selectedTarget) return { food: f1, count: sf.third, raw: null, frac: null, isSame: true };
+    const raw = calcRaw(f1.energy, fc, 3.60, target.energy);
+    let frac = Math.round((raw % 1) * 10) / 10; if(frac >= 1.0) frac = 0.0;
+    return { food: f1, count: Math.round(raw), raw, frac, isSame: false, score: getScore(frac) };
+  });
+
+  renderReverseResult('second', target, secondResults, sf.second);
+  renderReverseResult('third', target, thirdResults, sf.third);
+}
+
+function renderReverseResult(which, target, results, sameCount) {
+  const sameItem = results.find(r => r.isSame);
+  const others = results.filter(r => !r.isSame).sort((a,b) => b.score - a.score);
+
+  let html = '<table class="rank-table"><thead><tr>';
+  html += '<th style="width:24px"></th>';
+  html += '<th>第一食材</th>';
+  html += `<th class="num" style="font-size:16px;">${target.e}</th>`;
+  html += '<th class="num">個数</th>';
+  html += '<th class="num">小数</th>';
+  html += '<th>お得度</th>';
+  html += '</tr></thead><tbody>';
+
+  others.forEach((r, idx) => {
+    const fracStr = r.raw !== null ? (r.raw % 1).toFixed(1).replace('0.', '.') : '-';
+    html += `<tr>
+      <td><span class="rank-num">${idx+1}</span></td>
+      <td><div class="food-cell"><span class="food-emoji">${r.food.e}</span><span class="food-name">${r.food.name}</span></div></td>
+      <td class="num" style="font-size:16px;">${target.e}</td>
+      <td class="num">${r.count}個</td>
+      <td class="num" style="color:#888780;font-size:11px;">${fracStr}</td>
+      <td>${getBadge(r.frac)}</td>
+    </tr>`;
+  });
+
+  html += '</tbody></table>';
+  if(sameItem) {
+    html += `<div class="same-food-note">※ ${target.e} ${target.name}（同じ食材）→ ${sameCount}個（固定）</div>`;
+  }
+  document.getElementById(`result-reverse-${which}`).innerHTML = html;
+}
+
+// タブ2グリッドはタブを開いたときに初期化
+document.addEventListener('DOMContentLoaded', function() {
+  initGridTarget();
+});
+</script>
 </body>
 </html>

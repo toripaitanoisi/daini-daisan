@@ -230,14 +230,14 @@ function switchTab(n) {
   <!-- 結果：第一食材ランキング -->
   <div class="result-panel" id="panel-reverse-second">
     <div class="result-header">
-      <div class="result-title">第二食材として使う場合　— 第一食材お得度ランキング</div>
+      <div class="result-title">第一食材に対する第二食材お得度ランキング</div>
     </div>
     <div id="result-reverse-second"><div class="placeholder">食材を選んでください</div></div>
   </div>
 
   <div class="result-panel" id="panel-reverse-third">
     <div class="result-header">
-      <div class="result-title">第三食材として使う場合　— 第一食材お得度ランキング</div>
+      <div class="result-title">第一食材に対する第三食材お得度ランキング</div>
     </div>
     <div id="result-reverse-third"><div class="placeholder">食材を選んでください</div></div>
   </div>
@@ -376,7 +376,7 @@ function renderResult(which, f1, results, sameCount) {
   html += '</tr></thead><tbody>';
 
   sorted.forEach((r, idx) => {
-    const fracStr = r.raw !== null ? (r.raw % 1).toFixed(1).replace('0.','.'): '-';
+    const rawFrac = r.raw % 1; const dispFrac = rawFrac >= 0.95 ? 0 : rawFrac; const fracStr = r.raw !== null ? (dispFrac).toFixed(1).replace('0.','.'): '-';
     html += `<tr>
       <td><span class="rank-num">${idx+1}</span></td>
       <td><div class="food-cell"><span class="food-emoji">${r.food.e}</span><span class="food-name">${r.food.name}</span></div></td>
@@ -473,14 +473,14 @@ function renderReverseResult(which, target, results, sameCount) {
   let html = '<table class="rank-table"><thead><tr>';
   html += '<th style="width:24px"></th>';
   html += '<th>第一食材</th>';
-  html += `<th class="num" style="font-size:16px;">${target.e}</th>`;
+  html += `<th class="num">${which === 'second' ? '第二食材' : '第三食材'}</th>`;
   html += '<th class="num">個数</th>';
   html += '<th class="num">小数</th>';
   html += '<th>お得度</th>';
   html += '</tr></thead><tbody>';
 
   others.forEach((r, idx) => {
-    const fracStr = r.raw !== null ? (r.raw % 1).toFixed(1).replace('0.', '.') : '-';
+    const rawFrac2 = r.raw % 1; const dispFrac2 = rawFrac2 >= 0.95 ? 0 : rawFrac2; const fracStr = r.raw !== null ? (dispFrac2).toFixed(1).replace('0.', '.') : '-';
     html += `<tr>
       <td><span class="rank-num">${idx+1}</span></td>
       <td><div class="food-cell"><span class="food-emoji">${r.food.e}</span><span class="food-name">${r.food.name}</span></div></td>

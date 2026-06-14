@@ -48,17 +48,17 @@
   .result-count-label { font-size: 12px; color: #888780; }
 
   .rank-table { width: 100%; border-collapse: collapse; }
-  .rank-table th { padding: 6px 10px; font-size: 10px; font-weight: 700; color: #888780; text-align: left; border-bottom: 1.5px solid #e0ddd6; white-space: nowrap; }
+  .rank-table th { padding: 5px 5px; font-size: 10px; font-weight: 700; color: #888780; text-align: left; border-bottom: 1.5px solid #e0ddd6; white-space: nowrap; }
   .rank-table th.num { text-align: right; }
-  .rank-table td { padding: 7px 10px; font-size: 12px; border-bottom: 1px solid #e8e5de; vertical-align: middle; }
+  .rank-table td { padding: 6px 5px; font-size: 12px; border-bottom: 1px solid #e8e5de; vertical-align: middle; }
   .rank-table td.num { text-align: right; font-weight: 600; }
   .rank-table tr:last-child td { border-bottom: none; }
   .rank-table tr:hover td { background: #fff; }
 
   .rank-num { font-size: 10px; color: #888780; font-weight: 600; width: 20px; }
-  .food-cell { display: flex; align-items: center; gap: 5px; }
+  .food-cell { display: inline-flex; align-items: center; gap: 5px; }
   .food-emoji { font-size: 16px; }
-  .food-name { font-size: 12px; }
+  .food-name { font-size: 12px; white-space: nowrap; }
 
   .dot-bar { display: flex; align-items: center; gap: 3px; }
   .dot { width: 8px; height: 8px; border-radius: 50%; background: #e0ddd6; flex-shrink: 0; }
@@ -473,7 +473,7 @@ function renderReverseResult(which, target, results, sameCount) {
   let html = '<table class="rank-table"><thead><tr>';
   html += '<th style="width:24px"></th>';
   html += '<th>第一食材</th>';
-  html += `<th class="num">${which === 'second' ? '第二食材' : '第三食材'}</th>`;
+  html += `<th style="text-align:center;width:36px;">${which === 'second' ? '第二食材' : '第三食材'}</th>`;
   html += '<th class="num">個数</th>';
   html += '<th class="num">小数</th>';
   html += '<th>お得度</th>';
@@ -484,7 +484,7 @@ function renderReverseResult(which, target, results, sameCount) {
     html += `<tr>
       <td><span class="rank-num">${idx+1}</span></td>
       <td><div class="food-cell"><span class="food-emoji">${r.food.e}</span><span class="food-name">${r.food.name}</span></div></td>
-      <td class="num" style="font-size:16px;">${target.e}</td>
+      <td style="text-align:center;font-size:16px;">${target.e}</td>
       <td class="num">${r.count}個</td>
       <td class="num" style="color:#888780;font-size:11px;">${fracStr}</td>
       <td>${getBadge(r.frac)}</td>
